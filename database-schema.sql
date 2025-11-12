@@ -7,21 +7,46 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     account_type VARCHAR(20) NOT NULL CHECK (account_type IN ('personal', 'organization')),
+    auth_provider VARCHAR(20) NOT NULL DEFAULT 'email' CHECK (auth_provider IN ('email', 'google', 'facebook')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Personal profiles table
+-- Personal profiles table (unified with extended profile data)
 CREATE TABLE IF NOT EXISTS personal_profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    
+    -- Core personal data
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    date_of_birth DATE,
+    phone_number VARCHAR(20),
+    gender VARCHAR(10) CHECK (gender IN ('male', 'female', 'other')),
+    
+    -- Basic profile info
     bio TEXT,
     profile_picture VARCHAR(500),
-    date_of_birth DATE,
     location VARCHAR(255),
     website VARCHAR(500),
+    
+    -- Extended profile data
+    handle VARCHAR(50) UNIQUE,
+    nickname VARCHAR(100),
+    cover_photo TEXT,
+    lives_in VARCHAR(255),
+    hometown VARCHAR(255),
+    
+    -- JSONB fields for flexibility
+    education JSONB DEFAULT '{}',
+    work JSONB DEFAULT '{}',
+    socials JSONB DEFAULT '{}',
+    interests JSONB DEFAULT '[]',
+    skills JSONB DEFAULT '[]',
+    
+    relationship_status VARCHAR(50),
+    
+    -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -79,4 +104,7 @@ CREATE INDEX IF NOT EXISTS idx_likes_user_id ON likes(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
 CREATE INDEX IF NOT EXISTS idx_comments_user_id ON comments(user_id);
 CREATE INDEX IF NOT EXISTS idx_personal_profiles_user_id ON personal_profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_personal_profiles_handle ON personal_profiles(handle);
+CREATE INDEX IF NOT EXISTS idx_personal_profiles_first_name ON personal_profiles(first_name);
+CREATE INDEX IF NOT EXISTS idx_personal_profiles_last_name ON personal_profiles(last_name);
 CREATE INDEX IF NOT EXISTS idx_organization_profiles_user_id ON organization_profiles(user_id);

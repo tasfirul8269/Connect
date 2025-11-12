@@ -12,13 +12,47 @@ export interface PersonalProfile {
   user_id: string;
   first_name: string;
   last_name: string;
-  gender?: 'male' | 'female' | 'other';
+  date_of_birth?: string;
   phone_number?: string;
+  gender?: 'male' | 'female' | 'other';
+  
+  // Basic profile info
   bio?: string;
   profile_picture?: string;
-  date_of_birth?: string;
   location?: string;
   website?: string;
+  
+  // Extended profile data
+  handle?: string;
+  nickname?: string;
+  cover_photo?: string;
+  lives_in?: string;
+  hometown?: string;
+  
+  // JSONB fields
+  education?: {
+    school?: string;
+    college?: string;
+    university?: string;
+    year_batch?: string;
+    department?: string;
+  };
+  work?: {
+    workplace?: string;
+    role?: string;
+    previous?: string;
+  };
+  socials?: {
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+    github?: string;
+    website?: string;
+  };
+  interests?: string[];
+  skills?: string[];
+  
+  relationship_status?: string;
   created_at: string;
   updated_at: string;
 }

@@ -3,9 +3,13 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import authRoutes from './routes/auth';
 import postsRoutes from './routes/posts';
 import profilesRoutes from './routes/profiles';
+import uploadsRoutes from './routes/uploads';
+import uploadRoutes from './routes/upload';
 
 // Load .env from the backend root directory
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -19,22 +23,44 @@ console.log('Working directory:', process.cwd());
 console.log('Env file path:', path.resolve(__dirname, '../.env'));
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000 as number;
 
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? 'https://your-frontend-domain.com' 
-    : 'https://localhost:3000',
+    : ['http://localhost:3000', 'https://localhost:3000'],
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Create HTTP server and Socket.IO
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: process.env.NODE_ENV === 'production' 
+      ? 'https://your-frontend-domain.com' 
+      : ['http://localhost:3000', 'https://localhost:3000'],
+    credentials: true,
+  }
+});
+
+// Share io instance to routes/services
+import { setIO } from './config/socket';
+setIO(io);
+
+io.on('connection', (socket) => {
+  console.log('🔌 Client connected:', socket.id);
+  socket.on('disconnect', () => console.log('🔌 Client disconnected:', socket.id));
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/profiles', profilesRoutes);
+app.use('/api/uploads', uploadsRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -55,7 +81,7 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
 });
