@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom minimal scrollbar */
+/* Chrome, Edge, Safari */
+.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollable::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 9999px;
+}
+/* show only while scrolling/hover */
+.scrollable:hover::-webkit-scrollbar-thumb,
+.scrollable.scrolling::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.25);
+}
+
+/* Firefox */
+.scrollable {
+  scrollbar-width: none; /* hidden by default */
+}
+.scrollable:hover, .scrollable.scrolling {
+  scrollbar-width: thin; /* visible when hover/scroll */
+  scrollbar-color: rgba(0,0,0,0.25) transparent;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
